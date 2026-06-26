@@ -1,1 +1,893 @@
-cas0 1
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CASO-001 · SOC146 Phishing Mail - Excel 4.0 Macros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:      #0D1B2A;
+      --navy-mid:  #1A2E42;
+      --navy-soft: #243B55;
+      --accent:    #2E86DE;
+      --white:     #F5F7FA;
+      --muted:     #8FA3B8;
+      --border:    rgba(255,255,255,0.08);
+      --card-bg:   rgba(255,255,255,0.04);
+      --tp:        rgba(46,204,113,0.12);
+      --tpc:       #2ecc71;
+      --high:      rgba(231,76,60,0.12);
+      --highc:     #e74c3c;
+      --warn:      rgba(243,156,18,0.12);
+      --warnc:     #f39c12;
+    }
+
+    html, body {
+      background: var(--navy);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* nav */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--navy);
+      z-index: 10;
+    }
+
+    .nav-brand {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .nav-brand span { color: var(--accent); }
+
+    .nav-links { display: flex; gap: 1rem; align-items: center; }
+
+    .nav-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--white); }
+
+    .lang-switch {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid rgba(46,134,222,0.3);
+      border-radius: 4px;
+      padding: 3px 10px;
+      transition: background 0.2s;
+    }
+
+    .lang-switch:hover { background: rgba(46,134,222,0.1); }
+
+    /* layout */
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    /* case header */
+    .case-header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breadcrumb {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+    }
+
+    .breadcrumb span { color: var(--accent); }
+
+    .case-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    h1 {
+      font-size: clamp(20px, 3.5vw, 26px);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      max-width: 560px;
+    }
+
+    .verdict-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      padding: 5px 14px;
+      border-radius: 5px;
+      font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .tp-badge { background: var(--tp); color: var(--tpc); border: 1px solid rgba(46,204,113,0.25); }
+
+    /* meta grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .meta-item { display: flex; flex-direction: column; gap: 3px; }
+
+    .meta-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .meta-value {
+      font-size: 13px;
+      color: var(--white);
+      font-weight: 400;
+    }
+
+    .severity-high {
+      color: var(--highc);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* sections */
+    .section { margin-bottom: 2.5rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .section-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      flex-shrink: 0;
+    }
+
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: -0.01em;
+    }
+
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* content blocks */
+    .prose {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-weight: 300;
+    }
+
+    .prose strong { color: var(--white); font-weight: 500; }
+
+    /* info card */
+    .info-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .info-card-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* KV rows */
+    .kv-table { width: 100%; border-collapse: collapse; }
+
+    .kv-table tr { border-bottom: 1px solid var(--border); }
+    .kv-table tr:last-child { border-bottom: none; }
+
+    .kv-table td {
+      padding: 8px 0;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    .kv-key {
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      width: 160px;
+      padding-right: 1rem;
+      letter-spacing: 0.04em;
+    }
+
+    .kv-val { color: var(--white); word-break: break-all; }
+
+    /* code / ioc */
+    .ioc {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(46,134,222,0.08);
+      border: 1px solid rgba(46,134,222,0.15);
+      border-radius: 4px;
+      padding: 2px 7px;
+      color: #7dc4f7;
+      word-break: break-all;
+    }
+
+    .ioc-malicious {
+      background: rgba(231,76,60,0.08);
+      border-color: rgba(231,76,60,0.2);
+      color: #f4a09a;
+    }
+
+    /* timeline */
+    .timeline { position: relative; padding-left: 1.5rem; }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 8px;
+      bottom: 8px;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .tl-item {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .tl-item::before {
+      content: '';
+      position: absolute;
+      left: -1.5rem;
+      top: 6px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--navy);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .tl-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 3px;
+    }
+
+    .tl-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+
+    .tl-desc {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    /* MITRE table */
+    .mitre-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .mitre-row {
+      display: grid;
+      grid-template-columns: 110px 180px 1fr;
+      gap: 1rem;
+      padding: 10px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      align-items: start;
+    }
+
+    .mitre-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+    }
+
+    .mitre-tactic {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .mitre-tech {
+      font-size: 13px;
+      color: var(--white);
+      font-weight: 400;
+    }
+
+    /* tools used */
+    .tools-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .tool-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* lessons */
+    .lesson-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .lesson-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .lesson-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    .lesson-text {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.65;
+    }
+
+    .lesson-text strong { color: var(--white); font-weight: 500; }
+
+    /* verdict section */
+    .verdict-block {
+      background: var(--tp);
+      border: 1px solid rgba(46,204,113,0.2);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .verdict-block .verdict-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--tpc);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .verdict-block .verdict-text {
+      font-size: 14px;
+      color: var(--white);
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* placeholder style */
+    .placeholder-text {
+      font-size: 13px;
+      color: rgba(143,163,184,0.4);
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    /* nav footer */
+    .case-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .case-nav a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .case-nav a:hover { color: var(--accent); }
+
+    /* footer */
+    footer {
+      padding: 1.5rem;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    footer a, footer span {
+      font-size: 12px; color: var(--muted);
+      text-decoration: none; font-weight: 300;
+    }
+
+    footer a:hover { color: var(--accent); }
+    .footer-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); display: inline-block; margin: 0 0.75rem; vertical-align: middle; }
+
+    @media (max-width: 600px) {
+      .mitre-row { grid-template-columns: 1fr; gap: 4px; }
+      .case-title-row { flex-direction: column; }
+      nav { padding: 1rem; }
+      .kv-key { width: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="../../index.html">← <span>SS</span> / IR Portfolio</a>
+  <div class="nav-links">
+    <a href="../index.html">Casos</a>
+    <a class="lang-switch" href="../../en/cases/case-01.html">EN →</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- HEADER DEL CASO -->
+  <div class="case-header">
+    <p class="breadcrumb">IR Portfolio / ES / <span>CASO-001</span></p>
+
+    <div class="case-title-row">
+      <h1>SOC146 — Phishing Mail Detectado: Excel 4.0 Macros</h1>
+      <span class="verdict-badge tp-badge">TRUE POSITIVE</span>
+    </div>
+
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span class="meta-label">ID de Caso</span>
+        <span class="meta-value" style="font-family:'JetBrains Mono',monospace;">CASO-001</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Plataforma</span>
+        <span class="meta-value">LetsDefend</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">EventID</span>
+        <span class="meta-value" style="font-family:'JetBrains Mono',monospace;">93</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Tipo</span>
+        <span class="meta-value">Exchange / Phishing</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Severidad</span>
+        <span class="meta-value severity-high">● HIGH</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Fecha del Evento</span>
+        <span class="meta-value">Nov 28, 2025</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Fecha Documentado</span>
+        <!-- COMPLETAR: fecha en que documentaste el caso -->
+        <span class="meta-value placeholder-text">[16/06/2026]</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 1. RESUMEN EJECUTIVO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Resumen Ejecutivo</h2>
+      <div class="section-line"></div>
+    </div>
+    <!-- COMPLETAR: 3-4 oraciones resumiendo qué pasó, cómo se detectó y cuál fue el resultado -->
+    <p class="prose placeholder-text">
+      [se recibió por parte de nuestra victima "Lars" un email catalogado como , con un adjunto .xls
+      que contenía macros XLM (Excel 4.0, el remitente flasificaba su identidad tratando de llegar an nuesatra victima con un documento dirijido a el,el cual contenia dentro
+      el archivo malicioso, con el siguiente adjunto: "Hola!, porfavor revisa tu documemtacion adjunta en el siguiente archivo con la contraseña "infected", el cual contenia el proclamado xls, en conjunto con 2 archivos ddl que permitian al .xls
+      inflitrarse sin ser visto.]
+    </p>
+  </div>
+
+
+  <!-- 2. ALERTA INICIAL -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Alerta Inicial</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="info-card">
+      <p class="info-card-title">Datos de la alerta — SIEM</p>
+      <table class="kv-table">
+        <tr>
+          <td class="kv-key">Rule Name</td>
+          <td class="kv-val">SOC146 - Phishing Mail Detected - Excel 4.0 Macros</td>
+        </tr>
+        <tr>
+          <td class="kv-key">EventID</td>
+          <td class="kv-val" style="font-family:'JetBrains Mono',monospace;">93</td>
+        </tr>
+        <tr>
+          <td class="kv-key">Trigger</td>
+          <!-- COMPLETAR: qué disparó la regla SIEM, ej: detección de macro XLM en adjunto -->
+          <td class="kv-val placeholder-text">[Archivo adjutno .xls con macros 4.0]</td>
+        </tr>
+        <tr>
+          <td class="kv-key">Remitente</td>
+          <!-- COMPLETAR: dirección de email del remitente -->
+          <td class="kv-val"><span class="ioc ioc-malicious">[trenton@tritowncomputers.com]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">Destinatario</td>
+          <!-- COMPLETAR: dirección de email del destinatario -->
+          <td class="kv-val"><span class="ioc">[lars@letsdefend.io]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">Asunto del email</td>
+          <!-- COMPLETAR: asunto del email de phishing -->
+          <td class="kv-val placeholder-text">["Notas de reunion"]</td>
+        </tr>
+        <tr>
+          <td class="kv-key">Nombre del adjunto</td>
+          <!-- COMPLETAR: nombre del archivo .xls adjunto -->
+          <td class="kv-val"><span class="ioc ioc-malicious">[research-1646684671.xls]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">Hash (MD5/SHA256)</td>
+          <!-- COMPLETAR: hash del archivo malicioso -->
+          <td class="kv-val"><span class="ioc ioc-malicious">[SHA256: 4c13d452dd5d49671bd93ca32f2b4f85c78e39b6ab0ad1f38d98ed267f8fd896]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">IP Remitente</td>
+          <!-- COMPLETAR: IP de origen del email -->
+          <td class="kv-val"><span class="ioc ioc-malicious">[188.213.19.81]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">Acción tomada</td>
+          <!-- COMPLETAR: ¿el email fue bloqueado, en cuarentena, entregado? -->
+          <td class="kv-val placeholder-text">[Entregado]</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- 3. PROCESO DE INVESTIGACIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>Proceso de Investigación</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="info-card" style="margin-bottom:1.5rem;">
+      <p class="info-card-title">Preguntas de triaje respondidas</p>
+      <table class="kv-table">
+        <tr>
+          <td class="kv-key">¿Email legítimo?</td>
+          <!-- COMPLETAR -->
+          <td class="kv-val placeholder-text">[No, Falso remitente intendo ataques de ingenieria social]</td>
+        </tr>
+        <tr>
+          <td class="kv-key">¿Dominio conocido?</td>
+          <!-- COMPLETAR: resultado de verificar el dominio remitente -->
+          <td class="kv-val placeholder-text">[Dominio: tritowncomputers.com / Reputacion: sin ratros de relaciones pasadas]</td>
+        </tr>
+        <tr>
+          <td class="kv-key">¿Adjunto ejecutado?</td>
+          <!-- COMPLETAR: ¿el usuario abrió el archivo? -->
+          <td class="kv-val placeholder-text">[Sí / El archivo fue ejecutado negligentemente, generando conexiones con las IPs: 188.213.19.81 y 192.232.219.67 realizando peticiones
+           GET a urls maliciosas, de donde se controlaria el macro del .xls por medio de las IPs como C2]</td>
+        </tr>
+        <tr>
+          <td class="kv-key">¿Hash en VirusTotal?</td>
+          <!-- COMPLETAR: resultado de búsqueda del hash en VT -->
+          <td class="kv-val placeholder-text">[37/58 motores lo detectan como malicioso — Detectado mayormente como Trojano x97mdloardr]</td>
+        </tr>
+        <tr>
+          <td class="kv-key">¿Conexión C2?</td>
+          <!-- COMPLETAR: ¿hubo tráfico de red hacia C2 después? -->
+          <td class="kv-val placeholder-text">[Sí / Aplican las siguientes 188.213.19.81 y 192.232.219.67 realizando conexiones a dichas direcciones de manera directa a las 
+            14:20 y 14:21 respectivamente]</td>
+        </tr>
+        <tr>
+          <td class="kv-key">¿Otros afectados?</td>
+          <!-- COMPLETAR: ¿el mismo email llegó a otros usuarios? -->
+          <td class="kv-val placeholder-text">[No / No se encontraron mas afectados]</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- COMPLETAR: Descripción detallada del proceso paso a paso -->
+    <p class="prose placeholder-text">
+      [Primero que todo verifique la activdad de correo de nuestra victima, al confirmar la relacion con el remitente analize las dirrecciones IPs en 
+      busca de relaciones con el archivo "research-1646684671.xls" asi fue como descubri que las acciones de los macros del archivo
+      estaban comandadas por estas dos direcciones, utilizando un clasico modus operandi de "command an control" o C2,
+      Herramientas como: VirusTotal, WHOIS, Abuse IP y Cencys search, Me permitieron dar con la hipoteis del ataque y los indicadores de compromiso (IOC). Qué
+      escalaron rapidamente gracias al motor de alertas de la plataforma de estudio de esta alerta "Lets defend", la cual me permitio correlacionar las fechas, y realizar la timeline
+      correspondiente del ataque para poder finalmente comprobar el funcionamiento del malware en vivo gracias a Anyrun y poder concretar mi hipoteis.]
+    </p>
+  </div>
+
+
+  <!-- 4. TIMELINE DEL ATAQUE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Timeline del Ataque</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="timeline">
+
+      <div class="tl-item">
+        <!-- COMPLETAR: hora y fecha del primer evento -->
+        <p class="tl-time">[13/05/2021] · [02:11] UTC</p>
+        <p class="tl-title">Email de phishing enviado</p>
+        <p class="tl-desc placeholder-text">[Remitente envía el email con adjunto .xls a lars@letsdefend.io]</p>
+      </div>
+
+      <div class="tl-item">
+        <p class="tl-time">[13/05/2021] · [2:20] UTC</p>
+        <p class="tl-title">Detección por filtro de Exchange / regla SIEM</p>
+        <p class="tl-desc placeholder-text">[El sistema detecta el adjunto con macro XLM y genera la alerta SOC146 en el sistema, misma alerta fue pasada por alto]</p>
+      </div>
+
+      <div class="tl-item">
+        <p class="tl-time">[26/06/2026] · [10:30] UTC</p>
+        <p class="tl-title">Análisis del adjunto</p>
+        <p class="tl-desc placeholder-text">[Verificación y analisis del hash y relaciones en VirusTotal, Resultado: 37/58 detecciones maliciosas]</p>
+      </div>
+
+      <div class="tl-item">
+        <!-- Agregá o eliminá eventos según lo que encontraste en la investigación -->
+        <p class="tl-time">[26/06/2026] · [11:45] UTC</p>
+        <p class="tl-title">[Conexión C2 descubierta]</p>
+        <p class="tl-desc placeholder-text">[se encontrar conexiones por parte de las IPs 188.213.19.81 y 192.232.219.67]</p>
+      </div>
+
+      <div class="tl-item">
+        <p class="tl-time">[26/06/2026] · [12:35] UTC</p>
+        <p class="tl-title">Escalamiento y cierre del ticket</p>
+        <p class="tl-desc placeholder-text">[True Positive confirmado, se contuvo al Host de la victima, poniendo en cuarentena al archivo .xml, elevando la alerta
+          para la recuperacion del equipo]</p>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- 5. IOCs IDENTIFICADOS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>IOCs Identificados</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="info-card">
+      <table class="kv-table">
+        <tr>
+          <td class="kv-key">Email remitente</td>
+          <td class="kv-val"><span class="ioc ioc-malicious">[trenton@tritowncomputers.com]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">Dominio remitente</td>
+          <td class="kv-val"><span class="ioc ioc-malicious">[tritowncomputers.com]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">IP remitente</td>
+          <td class="kv-val"><span class="ioc ioc-malicious">[188.213.19.81]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">Nombre del archivo</td>
+          <td class="kv-val"><span class="ioc ioc-malicious">[research-1646684671.xls]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">MD5</td>
+          <td class="kv-val"><span class="ioc ioc-malicious">[b775cd8be83696ca37b2fe00bcb40574]</span></td>
+        </tr>
+        <tr>
+          <td class="kv-key">SHA256</td>
+          <td class="kv-val"><span class="ioc ioc-malicious">[1df68d55968bb9d2db4d0d18155188a03a442850ff543c8595166ac6987df820]</span></td>
+        </tr>
+        <!-- COMPLETAR: agregá IPs de C2, URLs, dominios adicionales si los encontraste -->
+        <tr>
+          <td class="kv-key">URL / C2</td>
+          <td class="kv-val"><span class="ioc ioc-malicious">[https://royalpalm.sparkblue.lk/vCNhYrq3Yg8/dot.html y https://nws.visionconsulting.ro/N1G1KCXA/dot.html]</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- 6. MITRE ATT&CK -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>MITRE ATT&CK Mapping</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="mitre-grid">
+      <div class="mitre-row">
+        <span class="mitre-id">T1566.001</span>
+        <span class="mitre-tactic">Acceso inical</span>
+        <span class="mitre-tech">Phishing — Phishing con archivo adjunto</span>
+      </div>
+      <div class="mitre-row">
+        <span class="mitre-id">T1137.001</span>
+        <span class="mitre-tactic">Aprovechamiento</span>
+        <span class="mitre-tech">Aplicaciones de Office ejecutadas en segundo plano — Excel 4.0 Macros (XLM)</span>
+      </div>
+      <div class="mitre-row">
+        <span class="mitre-id">T1204.002</span>
+        <span class="mitre-tactic">Ejecuccion</span>
+        <span class="mitre-tech">Ejecuccion final del .xls aprovechandose de la disponibiidad y confianza de la suite de Office</span>
+      </div>
+      <!-- COMPLETAR: agregá técnicas adicionales si encontraste conexión C2, descarga de payload, etc. -->
+      <div class="mitre-row" style="opacity:0.5;border-style:dashed;">
+        <span class="mitre-id placeholder-text">[TA0011]</span>
+        <span class="mitre-tactic placeholder-text">[Command and Control ]</span>
+        <span class="mitre-tech placeholder-text">[Acciones involucradas en la mantencion, control y asegurameinto del malwaren permitiendo un control externo
+          sin ser detectado tan facilmente]</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 7. HERRAMIENTAS UTILIZADAS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>Herramientas Utilizadas</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="tools-row">
+      <span class="tool-tag">SIEM - Lets Defend</span>
+      <span class="tool-tag">VirusTotal</span>
+      <span class="tool-tag">Any.run</span>
+      <span class="tool-tag">Urlscan.io</span>
+      <span class="tool-tag">WHOIS</span>
+      <span class="tool-tag">Cencys search</span>
+      <span class="tool-tag">Abuse IP</sp
+    </div>
+  </div>
+
+
+  <!-- 8. VEREDICTO FINAL -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>Veredicto y Acciones Tomadas</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="verdict-block">
+      <p class="verdict-label">✓ TRUE POSITIVE — Amenaza Confirmada</p>
+      <!-- COMPLETAR: explicá la justificación del veredicto y qué acciones se tomaron -->
+      <p class="verdict-text placeholder-text">
+        [Se confirma el True positive por medio de las correlaciones entre el sistema de alertas de Lets Defend y las puebas en Anytun, se detecto
+        la persistencia y ocultamiento del .xls por medio de los .dll en el sistema, Procedi a contener el host dela afectado, reportar el problema para su posterior 
+        recuperamiento y la primera contencion para el analisis del .xls, con posterior eliminacion para la seguridad de toda la organizacion]
+      </p>
+    </div>
+  </div>
+
+
+  <!-- 9. LECCIONES APRENDIDAS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>Lecciones Aprendidas</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="lesson-list">
+      <div class="lesson-item">
+        <span class="lesson-icon">🔍</span>
+        <p class="lesson-text">
+          <!-- COMPLETAR -->
+          <strong>[Observaciones]:</strong>
+          <span class="placeholder-text">[Observe, durante mi analisis la curiosa visibilidad para el sistema de las aplicaciones de office, ya que pasan desapersividas
+            por este ultimo, y sun vector de ataque muy sencillo, dado a su tan normalizada ejecuccion en segundo plano]</span>
+        </p>
+      </div>
+      <div class="lesson-item">
+        <span class="lesson-icon">⚡</span>
+        <p class="lesson-text">
+          <strong>[Aprendizaje]:</strong>
+          <span class="placeholder-text">[Aprendi sobre los cuidados del factor humano en las organizaciones, cuando muchas veces, aun con una robusta configuracion del sistema, con politicas claras de
+            seguridad de la informacion es un gran vector de ataque el factor humnano]</span>
+        </p>
+      </div>
+      <div class="lesson-item">
+        <span class="lesson-icon">🛡️</span>
+        <p class="lesson-text">
+          <strong>[Moraleja]:</strong>
+          <span class="placeholder-text">[Entendi, como moraleja, la constante e importante necesidad de las organizaciones en capacitar no solo tecnicamente a sus empleados,
+            sino tambien de manera analitica y analitica con la informacion que poseen, siendo este el principal vector de ataque de multiples ataques actuales de phishing y variantes]</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- navegación entre casos -->
+  <div class="case-nav">
+    <a href="../index.html">← Volver a todos los casos</a>
+    <a href="caso-02.html">Próximo caso →</a>
+  </div>
+
+</div>
+
+<footer>
+  <a href="../../index.html">IR Portfolio</a>
+  <span class="footer-dot"></span>
+  <a href="mailto:stibermansebastian@tutamail.com">stibermansebastian@tutamail.com</a>
+  <span class="footer-dot"></span>
+  <a href="https://www.linkedin.com/in/sebastian-stiberman-7957a8398" target="_blank" rel="noopener">LinkedIn</a>
+  <span class="footer-dot"></span>
+  <a href="https://github.com/cepita720" target="_blank" rel="noopener">GitHub</a>
+</footer>
+
+</body>
+</html>
